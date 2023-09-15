@@ -1,0 +1,57 @@
+{
+    "database": "prueba",
+    "collections": [
+      {
+        "name": "tabla1",
+        "roles": [
+          {
+            "name": "admin",
+            "document_filters": {
+              "read": { "userId": { "$eq": "$__session__.userId" } },
+              "write": { "userId": { "$eq": "$__session__.userId" } }
+            },
+            "insert": true,
+            "delete": true,
+            "search": true,
+            "fields": {
+              "myField": { "read": true, "write": true }
+            },
+            "additional_fields": { "read": true, "write": true }
+          },
+          {
+            "name": "empleado",
+            "document_filters": {
+              "read": { "userId": { "$eq": "$__session__.userId" } },
+              "write": { "userId": { "$eq": "$__session__.userId" } }
+            },
+            "insert": true,
+            "delete": false,
+            "search": true,
+            "fields": {
+              "myField": { "read": true, "write": true }
+            },
+            "additional_fields": { "read": true, "write": true }
+          }
+        ]
+      },
+      {
+        "name": "tabla2",
+        "roles": [
+          {
+            "name": "empleado",
+            "document_filters": {
+              "read": { "userId": { "$eq": "$__session__.userId" } },
+              "write": { "userId": { "$eq": "$__session__.userId" } }
+            },
+            "insert": true,
+            "delete": true,
+            "search": true,
+            "fields": {
+              "myField": { "read": true, "write": true }
+            },
+            "additional_fields": { "read": true, "write": true }
+          }
+        ]
+      }
+    ]
+  }
