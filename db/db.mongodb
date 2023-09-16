@@ -16,3 +16,21 @@ db.createUser({
         }
     }]
 })
+
+use('prueba');
+db.createCollection("rol");
+use('prueba');
+db.rol.insertMany([
+    {
+        "id": 1,
+        "rol": "admin"
+    },
+    {
+        "id": 2,
+        "rol": "empleado"
+    },
+    {
+        "id": 3,
+        "rol": "usuario"
+    }
+]);

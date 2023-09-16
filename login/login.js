@@ -1,17 +1,29 @@
-// Importar el cliente de MongoDB
-const MongoClient = require("mongodb");
+import express from "express";
+import Users from "../models/Users";
 
-// Conectar a la base de datos
-const client = new MongoClient("mongodb://localhost:27017");
-await client.connect();
+const router = express.Router();
 
-// Obtener la base de datos
-const db = client.db("myDatabase");
+router.post("/", async (req, res) => {
+  const { username, password } = req.body;
 
-// Crear las reglas de colección
-const rules = await db.collection("rules").createMany(
-  require("path/to/rules.json")
-);
+  const user = await Users.findOne({ username });
 
-// Desconectar de la base de datos
-await client.close();
+  if (!user) {
+    return res.status(401).json({ message: "Usuario no encontrado" });
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordValid) {
+    return res.status(401).json({ message: "Contraseña incorrecta" });
+  }
+
+  const token = await generateToken();
+
+  res.status(200).json({
+    token,
+    rol: user.rol
+  });
+});
+
+export default router;

@@ -1,14 +1,14 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import { appBodegas} from './routes/routes.js';
-import { appToken, appVerify} from './limit/token.js';
+import { saveRol,checkPermissions } from './middleware/midd.js';
 dotenv.config();
 
 let app = express();
 
 app.use(express.json());
-app.use("/token", appToken);
-app.use("/historiales",appVerify,appHistoriales);
+//app.use(saveRol);
+app.use("/login",saveRol);
+app.use("/t",checkPermissions,)
 
 let config = JSON.parse(process.env.MY_SERVER);
 

@@ -1,43 +1,25 @@
-
 import express from "express";
-import { authMiddleware } from "./auth.mjs";
 
-// Crear la aplicación
+// Middleware para validar los permisos
+const checkPermissions = (req, res, next) => {
+  const userRol = req.user.rol;
+  const permissions = req.session.permissions;
 
-// auth.mjs
-
-// Importar las dependencias
-import express from "express";
-import session from "express-session";
-
-// Crear el middleware de autenticación
-const authMiddleware = async (req, res, next) => {
-  // Comprobar si el usuario está autenticado
-  if (!req.session.userId) {
-    // Redirigir al usuario a la página de inicio de sesión
-    res.redirect("/login");
-    return;
+  if (!permissions.includes(userRol)) {
+    return res.status(403).json({
+      message: "No tienes permiso para acceder a esta tabla"
+    });
   }
 
-  // Agregar el ID del usuario a la solicitud
-  req.userId = req.session.userId;
-
-  // Continuar con la siguiente solicitud
   next();
 };
 
-// Exportar el middleware de autenticación
-export { authMiddleware };
-const app = express();
+// Middleware para guardar el rol del usuario en la sesión
+const saveRol = (req, res, next) => {
+  const userRol = req.user.rol;
+  req.session.rol = userRol;
 
-// Utilizar el middleware de autenticación
-app.use(authMiddleware);
+  next();
+};
 
-// Rutas de la aplicación
-app.get("/", (req, res) => {
-  // Acceder al ID del usuario de la solicitud
-  const userId = req.userId;
-
-  // Mostrar una página de bienvenida al usuario
-  res.send("Bienvenido, usuario " + userId);
-});
+export { checkPermissions, saveRol };
