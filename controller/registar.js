@@ -42,6 +42,7 @@ export async function registerlogin (req, res){
 	}
 };
 
+
 export async function logIn (req, res){
 	const { email, password } = req.body;
 	const login = await regLogin.findOne({ email });
