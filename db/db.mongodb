@@ -34,3 +34,5 @@ db.rol.insertMany([
         "rol": "usuario"
     }
 ]);
+use('prueba');
+db.createCollection("user");

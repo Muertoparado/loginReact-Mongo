@@ -1,6 +1,9 @@
 import { body } from "express-validator";
 
-const Login = [
+const regLogin = [
+    body("name").trim().notEmpty().withMessage("Parametros vacios!!")
+        .isString().withMessage("Tipo de dato incorrecto!").isLength({min:3}),
+
     body("email").trim().notEmpty().withMessage("Parametros vacios!!")
         .isEmail().withMessage("Parametro email invalido!")
         .isString().withMessage("Tipo de dato incorrecto!"),
@@ -9,4 +12,4 @@ const Login = [
         .isString().withMessage("Tipo de dato incorrecto!").isLength({min:6})
 ]
 
-export { Login };
+export { regLogin };

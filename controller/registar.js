@@ -1,20 +1,23 @@
 //import Login from '../storage/dtoLogin.js'
 import bcrypt from 'bcryptjs';
-import jwt from 'jwt';
+import { SignJWT, jwtVerify } from 'jose';
+import regLogin from '../storage/dtoLogin.js'
+
+// Generar un token JWT
 const generateJWTToken = async (user, privateKey) => {
-	const jws = await jwt.JWS.sign({ user }, privateKey, {
-	  alg: 'RS256',
-	});
-  
-	return jws.compact();
-  };
-  
-  // Verificar un token JWT
-  const verifyJWTToken = async (token, publicKey) => {
-	const jws = await jwt.JWS.verify(token, publicKey);
-  
+  const jws = await SignJWT.sign({ user }, privateKey, {
+    alg: 'RS256',
+  });
+
+  return jws.compact();
+};
+
+// Verificar un token JWT
+const verifyJWTToken = async (token, publicKey) => {
+	const jws = await jwtVerify(token, publicKey);
+
 	return jws.payload;
-  };
+};
 export async function registerlogin (req, res){
 	const { name, password, email } = req.body;
 
@@ -64,6 +67,12 @@ export async function logIn (req, res){
 		return res.status(401).json("login not found");
 	}
 
+  	const isPasswordValid = await bcrypt.compare(password, user.password);
+
+  	if (!isPasswordValid) {
+    	return res.status(401).json({ message: "Contraseña incorrecta" });
+  }
+
 	if (await bcrypt.compare(password, login.password)) {
 		const token = await generateJWTToken(login, process.env.JWT_PRIVATE_KEY);
 		const { password, ...others } = login._doc;
@@ -72,7 +81,7 @@ export async function logIn (req, res){
 	}
 
 	res.status(401).json("Wrong credentials!");
-};
+};	
 
 export async function changePassword (req, res) {
 	const { password } = req.body;
