@@ -1,7 +1,20 @@
 //import Login from '../storage/dtoLogin.js'
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken'
-
+import jwt from 'jwt';
+const generateJWTToken = async (user, privateKey) => {
+	const jws = await jwt.JWS.sign({ user }, privateKey, {
+	  alg: 'RS256',
+	});
+  
+	return jws.compact();
+  };
+  
+  // Verificar un token JWT
+  const verifyJWTToken = async (token, publicKey) => {
+	const jws = await jwt.JWS.verify(token, publicKey);
+  
+	return jws.payload;
+  };
 export async function registerlogin (req, res){
 	const { name, password, email } = req.body;
 
@@ -52,14 +65,7 @@ export async function logIn (req, res){
 	}
 
 	if (await bcrypt.compare(password, login.password)) {
-		const token = jwt.sign(
-			{
-				id: login._id,
-				email: login.email
-			},
-			process.env.JWT_PRIVATE_KEY,
-			{ expiresIn: "365d" }
-		);
+		const token = await generateJWTToken(login, process.env.JWT_PRIVATE_KEY);
 		const { password, ...others } = login._doc;
 		res.cookie("jwt", token, { httpOnly: true });
 		return res.status(200).json({ ...others, token });

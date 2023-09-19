@@ -1,6 +1,6 @@
 import express from "express";
-import { limitQuery } from "../limit/config.js";
-import { logIn } from "../controller/registar.js";
+import { changePassword, logIn, registerlogin } from "../controller/registar.js";
+import { getTabla } from "../controller/tabla1.js";
 
 function configurarApp() {
     const app = express();
@@ -9,8 +9,16 @@ function configurarApp() {
 }
 
 const appLogin = configurarApp();
+const appUtil = configurarApp();
 
-appLogin.get("/login",limitQuery(),logIn);
-appLogin.get("/users/:id",limitQuery(),getUserId);
-appLogin.post("/login",limitQuery(),postUsers);
-appLogin.delete("/users/:id",limitQuery(),deleteUser);
+appLogin.post("/",logIn);
+appLogin.post("/register",registerlogin);
+appLogin.post("/cpass",changePassword);
+
+appUtil.get("/t",getTabla)
+
+
+export {
+    appLogin,
+    appUtil
+}
