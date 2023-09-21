@@ -27,13 +27,11 @@ const verifyJWTToken = async (token, publicKey) => {
 
 export async function registerlogin(req, res) {
 	const { name, password, email } = req.body;
-  
-	// Validar los datos de entrada utilizando express-validator
+	//let data = req.body;
 	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-	  return res.status(400).json({ errors: errors.array() });
-	}
-  
+	
+	if (!errors.isEmpty()) return res.status(401).json({ errores: errors.array() });
+	
 	try {
 		const db = await con();
 		let colleccion = db.collection("user");
@@ -43,23 +41,19 @@ export async function registerlogin(req, res) {
 
 		// Generar un hash de contraseña seguro
 		const hashedPassword = await hashPassword(password, salt);
-
-		const login = new Login({
-			name,
-			
-			email,
-	});
-
-	//const newlogin = await login.save(db);
-
 	
-	let data = req.body;
-        const newlogin = {
+		const newlogin = {
             _id: new ObjectId(),
-            ...data,
-			password: hashedPassword,
-        };
+      			
+					name: name,
+					email: email,
+    		  
+     	 password: hashedPassword, // Include only the hashed password
+    };
+		console.log("Inserting document:", newlogin);
         await colleccion.insertOne(newlogin);
+		
+		
 	if (newlogin) {
 		console.log("enviado");
 		return res.status(201).json(newlogin);
@@ -68,13 +62,16 @@ export async function registerlogin(req, res) {
 		message: "Login not created",
 	});
 	}
-	} catch (err) {
-	  // Captura errores específicos y proporciona mensajes de error descriptivos
+} catch (err) {
+	console.error("Error al insertar documento:", err);
 	if (err.code === 11000) {
-	return res.status(400).json({ message: "El correo electrónico ya está en uso" });
+	  return res.status(400).json({ message: "El correo electrónico ya está en uso" });
+	} else if (err.code === 121) {
+	  // Handle validation error more explicitly
+	  return res.status(400).json({ message: "Documento no válido. Verifique los datos enviados." });
 	}
 	return res.status(500).json({ message: err.message });
-	}
+  }
 }
 /*
 export async function registerlogin (req, res){
@@ -115,19 +112,27 @@ export async function registerlogin (req, res){
 		});
 	}
 };  */
-export async function logIn (req, res){
+export async function logIn (req, res){	
 	const { email, password } = req.body;
-	const login = await Login.findOne(db,{ email });
 
+	try{
+
+	const db = await con();
+	let colleccion = db.collection("user");
+
+	const login = await colleccion.findOne(db,{ email });
+		console.log(login);
 	if (!login) {
 		return res.status(401).json("login not found");
 	}
 
-  	const isPasswordValid = await bcrypt.compare(password, user.password);
+  	//const isPasswordValid = await bcrypt.compare(password, user.password);
 
-  	if (!isPasswordValid) {
-    	return res.status(401).json({ message: "Contraseña incorrecta" });
-  }
+	const isPasswordValid = await bcrypt.compare(password, login.password);
+
+	if (!isPasswordValid) {
+		return res.status(401).json({ message: "Contraseña incorrecta" });
+}
 
 	if (await bcrypt.compare(password, login.password)) {
 		const token = await generateJWTToken(login, process.env.JWT_PRIVATE_KEY);
@@ -137,6 +142,10 @@ export async function logIn (req, res){
 	}
 
 	res.status(401).json("Wrong credentials!");
+}catch(error){
+	console.log(error);
+	return res.status(500).json({ message: "Error interno del servidor" });
+}
 };	
 
 export async function changePassword (req, res) {
