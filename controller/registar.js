@@ -7,22 +7,13 @@ import {con} from '../db/atlas.js'
 import {generateSalt} from './acceso.js'
 import { validationResult } from 'express-validator';
 import { ObjectId } from 'mongodb';
-
+import { createToken, verifyTokenMiddleware} from '../limit/token.js';
 // Generar un token JWT
-const generateJWTToken = async (user, privateKey) => {
-const jws = await SignJWT.sign({ user }, privateKey, {
-alg: 'RS256',
-});
+const generateJWTToken =createToken;
 
-return jws.compact();
-};
 
 // Verificar un token JWT
-const verifyJWTToken = async (token, publicKey) => {
-	const jws = await jwtVerify(token, publicKey);
-
-	return jws.payload;
-};
+const verifyJWTToken = verifyTokenMiddleware;
 
 
 export async function registerlogin(req, res) {
@@ -43,12 +34,10 @@ export async function registerlogin(req, res) {
 		const hashedPassword = await hashPassword(password, salt);
 	
 		const newlogin = {
-            _id: new ObjectId(),
-      			
-					name: name,
-					email: email,
-    		  
-     	 password: hashedPassword, // Include only the hashed password
+            _id: new ObjectId().toString(),
+			name: name,
+			email: email,
+    		password: hashedPassword, // Include only the hashed password
     };
 		console.log("Inserting document:", newlogin);
         await colleccion.insertOne(newlogin);
@@ -119,8 +108,7 @@ export async function logIn (req, res){
 
 	const db = await con();
 	let colleccion = db.collection("user");
-
-	const login = await colleccion.findOne(db,{ email });
+	const login = await colleccion.findOne({email });
 		console.log(login);
 	if (!login) {
 		return res.status(401).json("login not found");
@@ -135,11 +123,15 @@ export async function logIn (req, res){
 }
 
 	if (await bcrypt.compare(password, login.password)) {
-		const token = await generateJWTToken(login, process.env.JWT_PRIVATE_KEY);
+		/*const token = await generateJWTToken(login, process.env.JWT_PRIVATE_KEY);
 		const { password, ...others } = login._doc;
 		res.cookie("jwt", token, { httpOnly: true });
 		return res.status(200).json({ ...others, token });
-	}
+	}*/
+	const token = await createToken(login);
+	res.cookie("jwt", token, { httpOnly: true, expires: 0 }); // La cookie expirará cuando se cierre el navegador
+	return res.status(200).json({ token });
+}
 
 	res.status(401).json("Wrong credentials!");
 }catch(error){
@@ -178,9 +170,7 @@ export async function changePassword (req, res) {
 };
 
 export async function logout (req, res) {
-	//  logout the login by destroying the token
-	//  and return a success message
-
-	res.cookie("jwt", "", { maxAge: 1 });
-	res.redirect("/");
+	console.log("finish");
+	res.clearCookie("jwt");
+    res.status(200).json({ message: "Logged out" });
 };

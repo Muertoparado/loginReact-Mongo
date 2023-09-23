@@ -1,15 +1,18 @@
 import { body } from "express-validator";
 
-const regLogin = [
-    body("name").trim().notEmpty().withMessage("Parametros vacios!!")
-        .isString().withMessage("Tipo de dato incorrecto!").isLength({min:3}),
 
-    body("email").trim().notEmpty().withMessage("Parametros vacios!!")
+const name= body("name").trim().notEmpty().withMessage("Parametros vacios!!")
+        .isString().withMessage("Tipo de dato incorrecto!").isLength({min:3})
+
+const email= body("email").trim().notEmpty().withMessage("Parametros vacios!!")
         .isEmail().withMessage("Parametro email invalido!")
-        .isString().withMessage("Tipo de dato incorrecto!"),
+        .isString().withMessage("Tipo de dato incorrecto!")
     
-    body("password").trim().notEmpty().withMessage("Parametros vacios!!")
+const password =  body("password").trim().notEmpty().withMessage("Parametros vacios!!")
         .isString().withMessage("Tipo de dato incorrecto!").isLength({min:6})
-]
 
-export { regLogin };
+
+const regLogin = [name, email,password];
+const loginUser =[email,password];
+export {regLogin,loginUser};
+//exports.loginUser = body.object({email,password});
