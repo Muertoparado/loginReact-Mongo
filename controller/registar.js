@@ -5,6 +5,7 @@ import {con} from '../db/atlas.js'
 import {generateSalt} from './acceso.js'
 import { validationResult } from 'express-validator';
 import { ObjectId } from 'mongodb';
+import { createToken } from '../limit/token.js';
 
 export async function registerlogin(req, res) {
 	const { name, password, email } = req.body;
@@ -79,9 +80,10 @@ export async function logIn (req, res){
 }
 	res.status(401).json("Wrong credentials!");
 }catch(error){
-	return res.status(500).json({ message: "Error interno del servidor" });
-}
-};	
+		console.error(error); // Log the error to the console
+		return res.status(500).json({ message: "Error interno del servidor" });
+};
+}	
 
 export async function changePassword (req, res) {
 	const { email,password } = req.body;
